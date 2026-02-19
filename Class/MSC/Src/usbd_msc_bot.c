@@ -77,7 +77,7 @@ extern uint8_t MSCOutEpAdd;
   * @{
   */
 static void MSC_BOT_SendData(USBD_HandleTypeDef *pdev, uint8_t *pbuf, uint32_t len);
-static void MSC_BOT_CBW_Decode(USBD_HandleTypeDef *pdev);
+// Changed by Baulds (10-12-2025) @LucasFolkers made MSC_BOT_CBW_Decode function available to the outside for read
 static void MSC_BOT_Abort(USBD_HandleTypeDef *pdev);
 /**
   * @}
@@ -253,7 +253,8 @@ void MSC_BOT_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
   * @param  pdev: device instance
   * @retval None
   */
-static void  MSC_BOT_CBW_Decode(USBD_HandleTypeDef *pdev)
+// Changed by Baulds (10-12-2025) @LucasFolkers made MSC_BOT_CBW_Decode function available to the outside for read
+void MSC_BOT_CBW_Decode(USBD_HandleTypeDef *pdev)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = (USBD_MSC_BOT_HandleTypeDef *)pdev->pClassDataCmsit[pdev->classId];
 

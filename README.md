@@ -31,6 +31,9 @@ These files’ APIs will be called within every USB device application regardles
 
 Details about the content of this release are available in the release note [here](https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32_mw_usb_device/blob/master/Release_Notes.html).
 
+Minor changes have been made to correctly implement usbd for the MSC. These changes are documented using this format:
+// Changed by Baulds ("date") @"user" "change description"
+
 ## Troubleshooting
 
 Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) guide.

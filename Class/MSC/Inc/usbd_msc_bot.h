@@ -127,6 +127,9 @@ void MSC_BOT_SendCSW(USBD_HandleTypeDef  *pdev,
 
 void  MSC_BOT_CplClrFeature(USBD_HandleTypeDef  *pdev,
                             uint8_t epnum);
+
+// Changed by Baulds (10-12-2025) @LucasFolkers made MSC_BOT_CBW_Decode function available to the outside for read
+void MSC_BOT_CBW_Decode(USBD_HandleTypeDef *pdev);
 /**
   * @}
   */
