@@ -1094,10 +1094,19 @@ static int8_t SCSI_ProcessRead(USBD_HandleTypeDef *pdev, uint8_t lun)
 #endif /* USE_USBD_COMPOSITE */
 
   len = MIN(len, MSC_MEDIA_PACKET);
-
-  if (((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Read(lun, hmsc->bot_data,
+  
+  // Changed by Baulds (10-12-2025) @LucasFolkers added int status var
+  int8_t status = ((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Read(lun, hmsc->bot_data,
                                                                     hmsc->scsi_blk_addr,
-                                                                    (len / hmsc->scsi_blk_size)) < 0)
+                                                                    (len / hmsc->scsi_blk_size));
+
+  // Changed by Baulds (10-12-2025) @LucasFolkers added check to only accept status 0 to transmit read data.
+  if(status > 0)
+  {
+    hmsc->bot_state = USBD_BOT_DATA_IN;
+    return 0;
+  }
+  else if (status < 0)
   {
     SCSI_SenseCode(pdev, lun, HARDWARE_ERROR, UNRECOVERED_READ_ERROR);
     return -1;
@@ -1143,10 +1152,12 @@ static int8_t SCSI_ProcessWrite(USBD_HandleTypeDef *pdev, uint8_t lun)
 #endif /* USE_USBD_COMPOSITE */
 
   len = MIN(len, MSC_MEDIA_PACKET);
-
-  if (((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Write(lun, hmsc->bot_data,
+  
+  // Changed by Baulds (10-12-2025) @LucasFolkers added int status var
+  int status = ((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Write(lun, hmsc->bot_data,
                                                                      hmsc->scsi_blk_addr,
-                                                                     (len / hmsc->scsi_blk_size)) < 0)
+                                                                     (len / hmsc->scsi_blk_size));
+  if(status < 0)
   {
     SCSI_SenseCode(pdev, lun, HARDWARE_ERROR, WRITE_FAULT);
     return -1;
@@ -1157,17 +1168,21 @@ static int8_t SCSI_ProcessWrite(USBD_HandleTypeDef *pdev, uint8_t lun)
 
   /* case 12 : Ho = Do */
   hmsc->csw.dDataResidue -= len;
-
-  if (hmsc->scsi_blk_len == 0U)
+  
+  // Changed by Baulds (10-12-2025) @LucasFolkers added check to only accept status 0 to send succes command or receive next batch.
+  if (status == 0)
   {
-    MSC_BOT_SendCSW(pdev, USBD_CSW_CMD_PASSED);
-  }
-  else
-  {
-    len = MIN((hmsc->scsi_blk_len * hmsc->scsi_blk_size), MSC_MEDIA_PACKET);
+    if (hmsc->scsi_blk_len == 0U)
+    {
+      MSC_BOT_SendCSW(pdev, USBD_CSW_CMD_PASSED);
+    }
+    else
+    {
+      len = MIN((hmsc->scsi_blk_len * hmsc->scsi_blk_size), MSC_MEDIA_PACKET);
 
-    /* Prepare EP to Receive next packet */
-    (void)USBD_LL_PrepareReceive(pdev, MSCOutEpAdd, hmsc->bot_data, len);
+      /* Prepare EP to Receive next packet */
+      (void)USBD_LL_PrepareReceive(pdev, MSCOutEpAdd, hmsc->bot_data, len);
+    }
   }
 
   return 0;
